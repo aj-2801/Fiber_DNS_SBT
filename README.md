@@ -75,7 +75,7 @@ Example MPI run:
 Typical execution command:
 
 ```bash
-mpirun -np 64 ./fiber_settling_HIT_prog
+mpirun -np 64 ./fiber_in_HIT_prog
 ```
 
 ## Source Code Availability
