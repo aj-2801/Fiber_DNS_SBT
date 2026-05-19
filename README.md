@@ -82,7 +82,7 @@ mpirun -np 64 ./fiber_in_HIT_prog
 
 The `examples/` directory contains representative simulation outputs including:
 
-- videos of fibers settling and rotating in turbulence,
+- video of fibers settling and rotating in turbulence,
 - turbulence statistics,
 - dissipation-rate and velocity-fluctuation statistics.
 
