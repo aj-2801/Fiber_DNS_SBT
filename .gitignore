@@ -1,0 +1,21 @@
+# Compiled Fortran files
+*.o
+*.mod
+*.out
+*.exe
+
+# Large simulation data
+*.dat
+*.bin
+
+# Build folders
+build/
+
+# VS Code settings
+.vscode/
+
+# Mac junk
+.DS_Store 
+
+#Executable
+fiber_in_HIT_prog 

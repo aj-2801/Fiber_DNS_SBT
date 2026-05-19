@@ -1,0 +1,13 @@
+## Numerical framework and fiber-turbulence coupling 
+
+As discussed in theory, the governing equation for fluid flow is solved in a periodic domain using a pseudo-spectral method. Our pseudo-spectral code is parallelized using domain decomposition method implemented in the Message Passing Interface (MPI). We divide the periodic lattice using $2^{d_x} \times 2^{d_y} \times 2^{d_z}$ processing units, for non-negative integer values of $d_x, d_y$ and $d_z$ chosen by the user. This reduces the algorithmic complexity of the three-dimensional Fast Fourier Transform (FFT) inherent in the pseudo-spectral algorithm to $O(N_xN_yN_z(\mathrm{log_2}N_x-d_x)(\mathrm{log_2}N_y-d_y)(\mathrm{log_2}N_z-d_z))$ from $O(N_xN_yN_z(\mathrm{log_2}N_xN_yN_z))$. When any one of $d_x$, $d_y$ or $d_z$ is zero, we obtain the familiar pencil decomposition. Similarly, if two of them are zero, we obtain the slab decomposition. 
+
+The code also takes advantage of the Hermitian symmetry of the Fourier space counterpart of the real-valued velocity field in the physical space, thus further halving the number of computational flops and the memory requirement in the Fourier space. Moreover, our FFT algorithm is written in such a way so as to require a processing unit exchange only a half of its own data with its counterpart processor in each of the $d_{\alpha}+1$ concurrent message exchanges ($\alpha = x, y$ or $z$) in a one-dimensional FFT step along $\alpha$ direction. This also causes a significant reduction in the communication cost associated with the algorithm. 
+
+The forces exerted by the fiber on the fluid are obtained by integrating the force per unit length along the fiber axis. This avoids resolving the computational grid on the scale of fiber thickness. We obtain the force per unit length using an inertial slender-body theory (SBT) coupled to the pseudo-spectral solver. The first step of the RK-2 method (used for solving the Navier-Stokes equations for the flow field in the Fourier space) therefore involves inner iterations where, 
+
+1. We assume a guess for the force per unit length $f_i^m(s)$ for each fiber $m$. 
+2. The body force on the fluid exerted by the fibers on the fluid is then evaluated and Fourier-transformed to obtain $\hat{F}_i^{\mathrm{fiber}}$. 
+3. The flow field obtained from the pseudo-spectral solver is then inverse-Fourier-transformed and interpolated onto a linear grid along each fiber axis.
+4. The inertial SBT integral equation is then solved to obtain updated values for the force per unit length $f_i^m(s)$. We also solve Newton's equations for the fiber motion to obtain the fiber velocity and rotation rate.
+5. The iterations proceed until a user-defined tolerance is reached. 

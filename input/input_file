@@ -1,0 +1,120 @@
+
+ input.dat
+
+! Parameters are read using a namelist statement.
+! Blank lines and commented lines are ignored.
+! Location of the parameters in the list is not important.
+
+&parameters 
+
+nx = 6 ! total number of points along x: Nx = 2**nx 
+ny = 6 ! total number of points along y: Ny = 2**ny 
+nz = 6 ! total number of points along z: Nz = 2**nz 
+
+dproc = 6 ! total number of processors: Nproc = 2**dproc
+! make sure to have (dx+dy+dz) = dproc 
+dx = 2 
+dy = 2
+dz = 2 
+
+MaxStep = 200000    ! maximum number of time steps
+EndTime = 200.d0    ! when to stop simulation
+deltat = 1e-2       ! time step size 
+
+! intervals at which the "non-singular" part of the vel disturbance along fiber axis, 
+! vel disturbance field in FT space and the turbulent flow parameters are output... 
+interval_calc = 10  ! keep this even 
+
+t_fiber_start = 0.07d0 ! will be rounded off to the largest multiple of deltat smaller than or equal to t_fiber_start 
+t_fiber_end = 100.d0 
+
+! Is this a new case or a restart case...
+restart = 0 ! 0 for new, 1 for restart (for restart = 1 case, make sure to not change anything from restart = 0 case) 
+
+! Periodic cell dimensions
+Hx = 20.d0
+Hy = 20.d0
+Hz = 20.d0 
+
+! Cutoff radius for real part of ewald summation...
+r_cutoff_ewald = 30.d0 
+
+! Type of truncation to evaluate the nonlinear term... 
+! 1 for (Rogallo truncation + phase shift), 2 for (spherical truncation + phase shift) 
+! 0 if you do not want to have the non-linear term at all 
+truncation_type = 2  
+
+! physical properties of fiber and fluid...
+mu = 1.d0          ! fluid dynamic viscosity 
+rho_fluid = 40.d0  ! fluid density 
+kappa = 20.d0      ! fiber aspect ratio
+l_fiber = 1.d0     ! fiber half-length
+rho_fiber = 2.d0   ! fiber density 
+
+! would you want to have fiber inertia or not...
+fiber_inertia = 1  ! 1 for fiber inertia, 0 for no fiber inertia 
+
+! Number of fibers in the periodic box (a power of 2 is preferable)...
+N_fiber = 4 
+
+! no. of grid points along the fiber axis 
+Ns = 20 
+
+! do you want to randomize initial fiber orientation...
+random_init_p = 1 
+
+! Initial Fiber orientation (for each fiber, only matters if random_init_p is 0) 
+px = 0.7071d0
+py = 0.d0
+pz = 0.7071d0 
+
+! Imposed Rotational Velocities of the fiber (for each fiber) 
+OmegaX=0.d0
+OmegaY=0.d0
+OmegaZ=0.d0
+! Imposed Translational Velocities of the fiber (for each fiber) 
+Ufiber=0.d0
+Vfiber=0.d0
+Wfiber=0.d0
+
+! To move at above prescribed velocity/ angular velocity make moveatprescribed=1
+! To allow fiber to rotate and move as per Newtons equations, make moveatprescribed=0
+! and set initial fiber motion using the above velocity components...
+moveatprescribed=0
+
+! Imposed Fluid Translation Velocities
+U_far_Imposed=0.d0
+V_far_Imposed=0.d0
+W_far_Imposed=0.d0 
+
+gravity_Imposed=0.d0 ! Magnitude of gravity vector
+! Vector orientation
+gx=0.d0
+gy=0.d0
+gz=1.d0 
+
+! External force on the fiber (for each fiber) 
+F_ext_X = 0.d0
+F_ext_Y = 0.d0 
+F_ext_Z = 0.d0 
+
+! External torque on the fiber (for each fiber) 
+T_ext_X = 0.d0
+T_ext_Y = 0.d0 
+T_ext_Z = 0.d0
+
+! Order of interpolation in each direction (keep them all even) 
+interp_order_x = 4
+interp_order_y = 4
+interp_order_z = 4 
+
+! Turbulent forcing parameters 
+k_F = 1.4143d0 ! max forcing wavenumber, keep H_alpha*k_F/(2*pi) < N_alpha/2, where alpha could be x, y or z 
+sigma = 0.d0   ! related to forcing amplitude 
+T_F = 4.802d0  ! forcing timescale 
+
+out_path      = 'Results' ! name of the directory to store the results 
+
+/
+
+! end of the namelist
