@@ -35,10 +35,9 @@ This code is intended for research on:
 
 ## Repository structure
 
-- `src/` - source code
 - `input/` - sample input file
 - `scripts/` - build and run scripts
-- `docs/` - documentation on theory, numerics, and validation
+- `docs/` - documentation on theory and numerics 
 - `examples/` - example simulation cases 
 
 ## Build requirements
@@ -72,3 +71,7 @@ Example:
 ```bash
 ./scripts/run_example.sh
 ```
+
+## Source Code Availability
+
+The source code associated with this project is currently maintained in a private repository while related research is ongoing. Access may be granted upon request for academic or research purposes.
