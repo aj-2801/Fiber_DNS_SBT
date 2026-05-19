@@ -78,6 +78,14 @@ Typical execution command:
 mpirun -np 64 ./fiber_in_HIT_prog
 ```
 
+## Example Results
+
+The `examples/` directory contains representative simulation outputs including:
+
+- videos of fibers settling and rotating in turbulence,
+- turbulence statistics,
+- dissipation-rate and velocity-fluctuation statistics.
+
 ## Source Code Availability
 
 The source code associated with this project is currently maintained in a private repository while related research is ongoing. Access may be granted upon request for academic or research purposes.
