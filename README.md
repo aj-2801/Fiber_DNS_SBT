@@ -1,6 +1,6 @@
 # Inertial_fibers_in_HIT: MPI-based pseudo-spectral DNS coupled with inertial slender-body theory
 
-An open-source MPI-parallel Fortran (.f90) framework for simulating the motion of slender fibers in homogeneous isotropic turbulence using a pseudo-spectral DNS solver coupled iteratively with an inertial slender-body theory (SBT). 
+A project repository using an MPI-parallel Fortran (.f90) framework for simulating the motion of slender fibers in homogeneous isotropic turbulence using a pseudo-spectral DNS solver coupled iteratively with an inertial slender-body theory (SBT). 
 
 ## Overview
 
@@ -38,7 +38,7 @@ This code is intended for research on:
 - `input/` - sample input file
 - `scripts/` - build and run scripts
 - `docs/` - documentation on theory and numerics 
-- `examples/` - example simulation cases 
+- `examples/` - example simulation case 
 
 ## Build requirements
 
@@ -66,12 +66,30 @@ fiber_in_HIT_prog
 
 ## Run
 
-Example:
+Example MPI run:
 
 ```bash
 ./scripts/run_example.sh
 ```
 
+Typical execution command:
+
+```bash
+mpirun -np 64 ./fiber_settling_HIT_prog
+```
+
 ## Source Code Availability
 
 The source code associated with this project is currently maintained in a private repository while related research is ongoing. Access may be granted upon request for academic or research purposes.
+
+## Citation
+
+If you use this repository in academic work, please cite the associated publications when available.
+
+---
+
+## Contact
+
+**Anmol Joshi**  
+Cornell University  
+Email: aj446@cornell.edu
