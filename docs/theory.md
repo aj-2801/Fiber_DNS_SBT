@@ -48,7 +48,7 @@ $$
 \hat{F}_{i}^{\mathrm{fiber}} (k_x, k_y, k_z) = \sum_{m = 1}^{N_{\mathrm{fiber}}} \int_{-1}^{1} l \mathrm{d}s f_i^m(s) \delta (r_i - r_{c,i}^m - sp_i^m l) \mathrm{exp} (-i k_j (r_{c,j}^m + sp_j^m l)) 
 $$
 
-The force per unit length along the fiber axis is obtained by solving an integral equation obtained from an inertial slender-body theory (Joshi et. al., JFM, in prep.), 
+The force per unit length along the fiber axis is obtained by solving an integral equation obtained from an inertial slender-body theory (Joshi et. al., submitted to Journal of Fluid Mechanics, arXiv: 2607.02993 [physics.flu-dyn]), 
 
 $$
 4\pi (\eta_{\perp}(s)(\delta_{ij}-p_i^m p_j^m)+\eta_{\parallel}(s) p_i^m p_j^m) (U_j^m+s\dot{p}_j^m l-u_j^{NS}) = f_i^m(s) \left(\mathrm{ln}(2\kappa) + \mathrm{ln}\left(\frac{(1-s^2)^{1/2}}{\tilde{a}(s)}\right)\right) + \frac{1}{2}\int_{-1}^{1}\frac{f_i^m(s')-f_i^m(s)}{|s-s'|} \mathrm{d}s' + \frac{1}{2}(\delta_{ik}- 2p_i^m p_k^m)f_k^m(s) 
