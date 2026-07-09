@@ -1,6 +1,6 @@
 # Inertial_fibers_in_HIT: MPI-based pseudo-spectral DNS coupled with inertial slender-body theory
 
-A project repository using an MPI-parallel Fortran (.f90) framework for simulating the motion of slender fibers in homogeneous isotropic turbulence using a pseudo-spectral DNS solver coupled iteratively with an inertial slender-body theory (SBT) (Joshi et. al., arXiv: 2607.02993 [physics.flu-dyn]).  
+A project repository using an MPI-parallel Fortran (.f90) framework for simulating the motion of slender fibers in homogeneous isotropic turbulence using a pseudo-spectral DNS solver coupled iteratively with an inertial slender-body theory (SBT) (Joshi et. al., 	arXiv:2607.02993 [physics.flu-dyn]).  
 
 ## Overview
 
