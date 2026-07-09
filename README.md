@@ -90,6 +90,14 @@ The `examples/` directory contains representative simulation outputs including:
 
 The source code associated with this project is currently maintained in a private repository while related research is ongoing. Access may be granted upon request for academic or research purposes.
 
+## Authors
+
+* Anmol Joshi
+* Donald L. Koch
+
+Robert Frederick Smith School of Chemical and Biomolecular Engineering  
+Cornell University, Ithaca, New York, USA
+
 ## Citation
 
 If you use this repository in academic work, please cite the associated publications when available.
@@ -101,3 +109,7 @@ If you use this repository in academic work, please cite the associated publicat
 **Anmol Joshi**  
 Cornell University  
 Email: aj446@cornell.edu
+
+## License
+
+No license has been assigned to this repository at present. Licensing information will be added when the source code is released.
