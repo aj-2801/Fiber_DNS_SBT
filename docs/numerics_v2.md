@@ -246,7 +246,6 @@ Verify convergence with respect to:
 Useful consistency checks include:
 
 - $\mathbf{k}\cdot\widehat{\mathbf{u}}\approx0$;
-- $|\mathbf{p}^m|\approx1$;
 - statistically stationary turbulent kinetic energy and dissipation before introducing fibers;
 - adequate $k_{\max}\eta$;
 - convergence of fiber settling and rotation statistics;
@@ -259,4 +258,4 @@ Useful consistency checks include:
 - The supplied Makefile assumes the source files are available in the directory from which `make` is invoked.
 - The run script assumes `fiber_in_HIT_prog` is present in the working directory.
 - Large DNS cases may require substantial memory, wall time, and parallel I/O capacity.
-- 
+
