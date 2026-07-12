@@ -65,13 +65,13 @@ $$\mathbf{k}\cdot\widehat{\mathbf{u}}=0.$$
 
 The fibers are represented in the fluid equations by line distributions of force:
 
-$$\mathbf{F}^{\mathrm{fiber}}(\mathbf{r},t)=\sum_{m=1}^{N_{\mathrm{fiber}}}\int_{-1}^{1}l\,\mathbf{f}^m(s,t)\,\delta\!\left[\mathbf{r}-\mathbf{r}_c^m(t)-sl\mathbf{p}^m(t)\right]\,ds.$$
+$$\mathbf{F}^{\mathrm{fiber}}(\mathbf{r},t)=\sum_{m=1}^{N_{\mathrm{fiber}}}\int_{-1}^{1}l\mathbf{f}^m(s,t)\delta\!\left[\mathbf{r}-\mathbf{r}_c^m(t)-sl\mathbf{p}^m(t)\right]ds.$$
 
 Here, $s\in[-1,1]$ is the dimensionless coordinate along the fiber axis and $\mathbf{f}^m(s,t)$ is the force per unit length exerted by fiber $m$ on the fluid.
 
 Its Fourier transform is
 
-$$\widehat{\mathbf{F}}^{\mathrm{fiber}}(\mathbf{k},t)=\sum_{m=1}^{N_{\mathrm{fiber}}}\int_{-1}^{1}l\,\mathbf{f}^m(s,t)e^{-i\mathbf{k}\cdot[\mathbf{r}_c^m(t)+sl\mathbf{p}^m(t)]}\,ds.$$
+$$\widehat{\mathbf{F}}^{\mathrm{fiber}}(\mathbf{k},t)=\sum_{m=1}^{N_{\mathrm{fiber}}}\int_{-1}^{1}l\mathbf{f}^m(s,t)e^{-i\mathbf{k}\cdot[\mathbf{r}_c^m(t)+sl\mathbf{p}^m(t)]}ds.$$
 
 Representing the fibers by line forces avoids resolving their small cross-sectional scale on the three-dimensional DNS grid.
 
@@ -132,7 +132,7 @@ $$\frac{d\mathbf{p}^m}{dt}=\mathbf{\Omega}^m\times\mathbf{p}^m.$$
 
 Statistically stationary homogeneous isotropic turbulence is maintained by stochastic forcing applied only to low-wavenumber modes satisfying
 
-$$0<k\leq k_F.$$
+$$0 \leq k \leq k_F.$$
 
 The forcing is generated from independent Ornstein-Uhlenbeck processes in Fourier space and projected onto the plane perpendicular to $\mathbf{k}$:
 
