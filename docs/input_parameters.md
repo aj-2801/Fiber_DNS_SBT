@@ -177,7 +177,7 @@ Interpretation:
 
 For deterministic initialization,
 
-$$\mathbf{p}(0)=\begin{bmatrix}px\\py\\pz\end{bmatrix},$$
+$$\mathbf{p}(0)=\begin{bmatrix}px \\ py \\ pz\end{bmatrix},$$
 
 and the components should satisfy
 
@@ -205,7 +205,7 @@ $$\mathbf{\Omega}=\begin{bmatrix}OmegaX\\OmegaY\\OmegaZ\end{bmatrix}.$$
 
 The translational velocity is
 
-$$\mathbf{U}=\begin{bmatrix}Ufiber\\Vfiber\\Wfiber\end{bmatrix}.$$
+$$\mathbf{U}=\begin{bmatrix}Ufiber \\ Vfiber \\ Wfiber \end{bmatrix}.$$
 
 ## 14. Prescribed or freely evolving motion
 
