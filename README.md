@@ -1,10 +1,10 @@
-# FiberDNS-SBT: inertial slender fibers in homogeneous isotropic turbulence
+# Fiber_DNS_SBT: inertial slender fibers in homogeneous isotropic turbulence
 
 An MPI-parallel Fortran framework coupling pseudo-spectral direct numerical simulation (DNS) of homogeneous isotropic turbulence with inertial slender-body theory (SBT) for finite-Reynolds-number fiber dynamics.
 
 ## Overview
 
-`FiberDNS-SBT` is designed to simulate the coupled evolution of an incompressible turbulent flow and one or more slender fibers in a triply periodic domain.
+`Fiber_DNS_SBT` is designed to simulate the coupled evolution of an incompressible turbulent flow and one or more slender fibers in a triply periodic domain.
 
 The framework combines:
 
