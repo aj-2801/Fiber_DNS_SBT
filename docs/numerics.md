@@ -1,13 +1,261 @@
-## Numerical framework and fiber-turbulence coupling 
+# Numerical methods
 
-As discussed in theory, the governing equation for fluid flow is solved in a periodic domain using a pseudo-spectral method. Our pseudo-spectral code is parallelized using domain decomposition method implemented in the Message Passing Interface (MPI). We divide the periodic lattice using $2^{d_x} \times 2^{d_y} \times 2^{d_z}$ processing units, for non-negative integer values of $d_x, d_y$ and $d_z$ chosen by the user. This reduces the algorithmic complexity of the three-dimensional Fast Fourier Transform (FFT) inherent in the pseudo-spectral algorithm to $O(N_xN_yN_z(\mathrm{log_2}N_x-d_x)(\mathrm{log_2}N_y-d_y)(\mathrm{log_2}N_z-d_z))$ from $O(N_xN_yN_z(\mathrm{log_2}N_xN_yN_z))$. When any one of $d_x$, $d_y$ or $d_z$ is zero, we obtain the familiar pencil decomposition. Similarly, if two of them are zero, we obtain the slab decomposition. 
+This document summarizes the computational methods used by `Fiber_DNS_SBT`.
 
-The code also takes advantage of the Hermitian symmetry of the Fourier space counterpart of the real-valued velocity field in the physical space, thus further halving the number of computational flops and the memory requirement in the Fourier space. Moreover, our FFT algorithm is written in such a way so as to require a processing unit exchange only a half of its own data with its counterpart processor in each of the $d_{\alpha}+1$ concurrent message exchanges ($\alpha = x, y$ or $z$) in a one-dimensional FFT step along $\alpha$ direction. This also causes a significant reduction in the communication cost associated with the algorithm. 
+## 1. Spatial resolution
 
-The forces exerted by the fiber on the fluid are obtained by integrating the force per unit length along the fiber axis. This avoids resolving the computational grid on the scale of fiber thickness. We obtain the force per unit length using an inertial slender-body theory (SBT) coupled to the pseudo-spectral solver. The first step of the RK-2 method (used for solving the Navier-Stokes equations for the flow field in the Fourier space) therefore involves inner iterations where, 
+The periodic domain is discretized using
 
-1. We assume a guess for the force per unit length $f_i^m(s)$ for each fiber $m$. 
-2. The body force on the fluid exerted by the fibers on the fluid is then evaluated and Fourier-transformed to obtain $\hat{F}_i^{\mathrm{fiber}}$. 
-3. The flow field obtained from the pseudo-spectral solver is then inverse-Fourier-transformed and interpolated onto a linear grid along each fiber axis.
-4. The inertial SBT integral equation is then solved to obtain updated values for the force per unit length $f_i^m(s)$. We also solve Newton's equations for the fiber motion to obtain the fiber velocity and rotation rate.
-5. The iterations proceed until a user-defined tolerance is reached. 
+$$N_x=2^{n_x},\qquad N_y=2^{n_y},\qquad N_z=2^{n_z}$$
+
+grid points.
+
+The physical domain dimensions are $H_x$, $H_y$, and $H_z$, giving grid spacings
+
+$$\Delta x=\frac{H_x}{N_x},\qquad \Delta y=\frac{H_y}{N_y},\qquad \Delta z=\frac{H_z}{N_z}.$$
+
+The corresponding discrete wavenumbers are
+
+$$k_x=\frac{2\pi n_x^\ast}{H_x},\qquad k_y=\frac{2\pi n_y^\ast}{H_y},\qquad k_z=\frac{2\pi n_z^\ast}{H_z},$$
+
+where $n_\alpha^\ast$ denotes the signed Fourier-mode index.
+
+## 2. Pseudo-spectral Navier-Stokes solver
+
+Spatial derivatives and the incompressibility projection are evaluated in Fourier space. The nonlinear dyadic products $\mathbf{u}\mathbf{u}$ are formed in physical space and transformed back to Fourier space.
+
+The Fourier-space velocity equation is advanced using a second-order Runge-Kutta method.
+
+A typical fluid update consists of:
+
+1. inverse transforming the velocity to physical space;
+2. forming the nonlinear dyadic products;
+3. Fourier transforming the nonlinear terms;
+4. applying dealiasing;
+5. adding turbulent and fiber forcing;
+6. projecting the right-hand side onto divergence-free Fourier modes; and
+7. completing the Runge-Kutta update.
+
+## 3. Aliasing control
+
+The input parameter `truncation_type` selects the treatment of the nonlinear term:
+
+- `0`: omit the nonlinear term;
+- `1`: Rogallo-type truncation with phase shifting;
+- `2`: spherical truncation with phase shifting.
+
+The implementation combines phase shifting with spectral truncation to remove aliased modes. For the documented spherical criterion, the directional cutoff is based on
+
+$$k_{\max,\alpha}=\frac{2\pi}{H_\alpha}\frac{\sqrt{2}N_\alpha}{3}.$$
+
+A resolution study should verify that the selected truncation and grid adequately resolve the smallest turbulent scales. The quantity $k_{\max}\eta$ is a useful diagnostic.
+
+## 4. MPI domain decomposition
+
+The total number of MPI processes is
+
+$$N_{\mathrm{proc}}=2^{d_{\mathrm{proc}}},$$
+
+with
+
+$$d_x+d_y+d_z=d_{\mathrm{proc}}.$$
+
+The global lattice is decomposed over
+
+$$2^{d_x}\times2^{d_y}\times2^{d_z}$$
+
+process blocks.
+
+This generalized decomposition includes:
+
+- slab decomposition when two of $d_x$, $d_y$, and $d_z$ are zero;
+- pencil decomposition when one is zero; and
+- three-dimensional block decomposition when all three are nonzero.
+
+The distributed FFT implementation exploits Hermitian symmetry of the Fourier transform of a real-valued velocity field, reducing Fourier-space storage and arithmetic.
+
+During a one-dimensional distributed FFT in direction $\alpha$, the communication pattern is organized into $d_\alpha+1$ concurrent exchange stages, with each process exchanging subsets of its local data rather than globally transposing the full field at once.
+
+## 5. Fiber-axis discretization
+
+Each fiber axis is discretized using `Ns` points. These points are used to:
+
+- represent the force distribution $\mathbf{f}^m(s)$;
+- interpolate the fluid velocity to the fiber axis;
+- evaluate the inertial SBT integral equation; and
+- integrate the hydrodynamic force and torque.
+
+The number of axial points should be increased until fiber velocities, rotation rates, and force distributions are insensitive to further refinement.
+
+## 6. Spreading the fiber force to the fluid
+
+For each fiber, the line-force distribution is integrated along the axis and mapped to the periodic fluid grid.
+
+In Fourier space,
+
+$$\widehat{\mathbf{F}}^{\mathrm{fiber}}(\mathbf{k})=\sum_m\int_{-1}^{1}l\,\mathbf{f}^m(s)e^{-i\mathbf{k}\cdot[\mathbf{r}_c^m+sl\mathbf{p}^m]}\,ds.$$
+
+This Fourier representation avoids direct regularization of a three-dimensional delta function on the physical grid.
+
+## 7. Interpolation to the fiber axis
+
+The fluid velocity is inverse transformed to physical space and interpolated to the `Ns` axial points of each fiber.
+
+The interpolation orders in the three coordinate directions are controlled by:
+
+- `interp_order_x`;
+- `interp_order_y`; and
+- `interp_order_z`.
+
+The supplied input file requires these interpolation orders to be even.
+
+Interpolation-order convergence should be assessed together with DNS-grid and fiber-axis convergence.
+
+## 8. Non-singular disturbance and periodic images
+
+The velocity passed to the inertial SBT equation must exclude the singular Stokes disturbance generated by the line force itself.
+
+The code forms the non-singular disturbance by:
+
+1. subtracting the Fourier-space Stokes response to the fiber forcing;
+2. inverse transforming the remaining field;
+3. interpolating it onto the fiber axis; and
+4. adding the Stokes disturbance generated by periodic image fibers.
+
+The image contribution is computed using Ewald summation. The real-space part of the Ewald sum is truncated using `r_cutoff_ewald`.
+
+The Ewald cutoff should be increased until the image-induced velocity and resulting fiber dynamics are converged.
+
+## 9. Iterative fiber-fluid coupling
+
+The first stage of the Runge-Kutta fluid update contains inner iterations that couple the fluid and fibers.
+
+At iteration $q$:
+
+1. begin with a current guess $\mathbf{f}^{m,(q)}(s)$ for each fiber;
+2. compute $\widehat{\mathbf{F}}^{\mathrm{fiber},(q)}$;
+3. update the fluid disturbance using the pseudo-spectral solver;
+4. inverse transform and interpolate the non-singular velocity along every fiber;
+5. solve the discretized inertial SBT equation;
+6. update fiber velocities and orientation rates; and
+7. test convergence.
+
+The iteration continues until the implementation's user-defined tolerance is satisfied.
+
+A compact workflow is:
+
+```text
+guess fiber force distribution
+        |
+        v
+construct Fourier-space fiber forcing
+        |
+        v
+update pseudo-spectral fluid field
+        |
+        v
+subtract singular Stokes disturbance
+        |
+        v
+inverse transform and interpolate to fiber axes
+        |
+        v
+solve inertial SBT and particle equations
+        |
+        v
+check convergence
+```
+
+## 10. Fiber motion
+
+When `moveatprescribed = 1`, all fibers use the prescribed translational and angular velocities in the input file.
+
+When `moveatprescribed = 0`:
+
+- with `fiber_inertia = 1`, the code advances Newton's equations for fiber translation and rotation;
+- with `fiber_inertia = 0`, the fiber motion is determined from instantaneous force and torque balance.
+
+The centroid and orientation are then advanced in time, with periodic wrapping applied to fiber positions as needed.
+
+## 11. Turbulence forcing
+
+The stochastic forcing acts on modes with $0<k\leq k_F$.
+
+The forcing parameters are:
+
+- `k_F`: largest forced wavenumber;
+- `sigma`: forcing-amplitude parameter; and
+- `T_F`: forcing correlation timescale.
+
+The forcing is projected onto divergence-free Fourier modes before being added to the Navier-Stokes equations.
+
+A common workflow is to first evolve the turbulence without active fiber coupling until statistical stationarity is reached, then activate the fibers at `t_fiber_start`.
+
+## 12. Simulation phases and output
+
+The parameters `t_fiber_start` and `t_fiber_end` define the time interval during which the fiber calculation is active.
+
+The sample input notes that `t_fiber_start` is rounded down to the nearest time represented by an integer multiple of `deltat`.
+
+The parameter `interval_calc` controls the interval at which selected fiber disturbances, Fourier-space fields, and turbulence statistics are evaluated or written. The supplied input file requires `interval_calc` to be even.
+
+The calculation stops when either `MaxStep` or `EndTime` is reached.
+
+## 13. Restart calculations
+
+The parameter `restart` selects:
+
+- `0`: a new calculation;
+- `1`: a restart calculation.
+
+The sample input instructs users not to change the physical and numerical configuration between the original run and the restart. Restart-file names and checkpoint intervals depend on the private source implementation.
+
+## 14. Parallel execution
+
+The MPI process count used at launch must satisfy
+
+$$N_{\mathrm{MPI}}=2^{d_{\mathrm{proc}}}.$$
+
+For the sample input,
+
+$$d_{\mathrm{proc}}=6,\qquad N_{\mathrm{MPI}}=64.$$
+
+Run using:
+
+```bash
+mpirun -np 64 ./fiber_in_HIT_prog
+```
+
+The process count in `scripts/run_example.sh` must be updated whenever `dproc` changes.
+
+## 15. Recommended convergence checks
+
+Verify convergence with respect to:
+
+- $N_x$, $N_y$, and $N_z$;
+- `deltat`;
+- `Ns`;
+- interpolation order;
+- `r_cutoff_ewald`;
+- dealiasing and truncation choice;
+- the fiber-fluid iterative tolerance;
+- box dimensions;
+- number of fibers; and
+- MPI decomposition.
+
+Useful consistency checks include:
+
+- $\mathbf{k}\cdot\widehat{\mathbf{u}}\approx0$;
+- statistically stationary turbulent kinetic energy and dissipation before introducing fibers;
+- adequate $k_{\max}\eta$;
+- convergence of fiber settling and rotation statistics;
+- convergence of the Ewald image correction; and
+- agreement between equivalent runs using different MPI decompositions.
+
+## 16. Implementation cautions
+
+- The source code is not included in the current public repository.
+- The supplied Makefile assumes the source files are available in the directory from which `make` is invoked.
+- The run script assumes `fiber_in_HIT_prog` is present in the working directory.
+- Large DNS cases may require substantial memory, wall time, and parallel I/O capacity.
+

@@ -1,98 +1,169 @@
-## Governing Equations
+# Theory: inertial slender fibers in homogeneous isotropic turbulence
 
-The code solves the governing equations for the turbulent flow of an incompressible Newtonian fluid laden with slender fibers. The fluid flow is governed by the incompressible Navier–Stokes equations, which written in index notation is given as, 
+This document summarizes the mathematical formulation used by `Fiber_DNS_SBT`. It is intended as an implementation-oriented companion to the associated research papers.
 
-$$
-\frac{\partial u_i}{\partial t} + \frac{\partial}{\partial r_j} (u_i u_j) = -\frac{1}{\rho}\frac{\partial p}{\partial r_i} + \nu \frac{\partial^2 u_i}{\partial r_i^2} + \frac{1}{\rho}(F_{i}^{\mathrm{turb}} + F_{i}^{\mathrm{fiber}})
-$$
+## 1. Physical problem
+
+We consider an incompressible Newtonian fluid containing $N_{\mathrm{fiber}}$ slender fibers in a triply periodic orthogonal domain of dimensions $H_x$, $H_y$, and $H_z$.
+
+The fluid has density $\rho_f$, dynamic viscosity $\mu$, and kinematic viscosity
+
+$$\nu=\frac{\mu}{\rho_f}.$$
+
+Each fiber has:
+
+- half-length $l$;
+- characteristic radius $a_0$;
+- aspect ratio $$\kappa=\frac{l}{a_0};$$
+- centroid position $\mathbf{r}_c^m(t)$;
+- orientation unit vector $\mathbf{p}^m(t)$;
+- translational velocity $\mathbf{U}^m(t)$; and
+- angular velocity $\mathbf{\Omega}^m(t)$.
+
+The superscript $m$ identifies the fiber.
+
+## 2. Fluid governing equations
+
+The fluid velocity $\mathbf{u}(\mathbf{r},t)$ and pressure $p(\mathbf{r},t)$ satisfy
+
+$$\frac{\partial\mathbf{u}}{\partial t}+\nabla\cdot(\mathbf{u}\mathbf{u})=-\frac{1}{\rho_f}\nabla p+\nu\nabla^2\mathbf{u}+\frac{1}{\rho_f}\left(\mathbf{F}^{\mathrm{turb}}+\mathbf{F}^{\mathrm{fiber}}\right),$$
 
 with incompressibility constraint
 
-$$
-\frac{\partial u_i}{\partial r_i} = 0 
-$$
+$$\nabla\cdot\mathbf{u}=0.$$
 
-Here, $u_i$ and $p$ denote the fluid velocity and pressure, $\rho$ and $\nu$ are the fluid density and kinematic viscosity, and $F_{i}^{\mathrm{turb}}$ and $F_{i}^{\mathrm{fiber}}$ represent the force per unit volume on the fluid from the stochastic turbulent forcing and the fibers in the box. The turbulent force is necessary to maintain the turbulent fluid velocity in a statistically steady state. 
+Here:
 
-The governing equations given above are solved in a periodic domain with unit cell dimensions $H_x$, $H_y$ and $H_z$. The fluid velocity and pressure fields satisfying the periodic boundary conditions can then be approximated using a truncated discrete Fourier series, 
+- $\mathbf{F}^{\mathrm{turb}}$ is the large-scale stochastic forcing used to maintain turbulence; and
+- $\mathbf{F}^{\mathrm{fiber}}$ is the body force exerted by the fibers on the fluid.
 
-$$
-u_i = \sum_{k_x} \sum_{k_y} \sum_{k_z} \hat{u}_i \mathrm{exp} (ik_j r_j) 
-$$
+The use of the conservative or dyadic nonlinear term $\nabla\cdot(\mathbf{u}\mathbf{u})$ reduces the number of transformed nonlinear quantities relative to some equivalent formulations.
 
-$$
-p = \sum_{k_x} \sum_{k_y} \sum_{k_z} \hat{p} \mathrm{exp} (i k_j r_j) 
-$$ 
+## 3. Fourier representation in the periodic domain
 
-where, $(k_x, k_y, k_z)^T$ denotes the wave vector and caret indicates the discrete Fourier transform. The wavevector in an orthogonal unit cell (considered in the code) is defined as, 
+The periodic velocity and pressure fields are represented using discrete Fourier series:
 
-$$
-k_x = \frac{2 \pi}{H_x} n_x, \ \ \  k_y = \frac{2 \pi}{H_y} n_y, \ \ \   k_z = \frac{2 \pi}{H_z} n_z 
-$$ 
+$$\mathbf{u}(\mathbf{r},t)=\sum_{\mathbf{k}}\widehat{\mathbf{u}}(\mathbf{k},t)e^{i\mathbf{k}\cdot\mathbf{r}},$$
 
-where, $n_{\alpha} \in \\{-N_{\alpha}/2, -N_{\alpha}/2 + 1, ..., 0, 1, 2, ..., N_{\alpha}/2 - 1 \\}$ and $\alpha = x, y, z$. We employ direct numerical simulations (DNS) to solve the governing equations, which in the Fourier space becomes, 
+$$p(\mathbf{r},t)=\sum_{\mathbf{k}}\widehat{p}(\mathbf{k},t)e^{i\mathbf{k}\cdot\mathbf{r}}.$$
 
-$$ 
-\frac{\partial \hat{u}_i}{\partial t} + \nu k^2 \hat{u}_i = \left( \delta_{ij} - \frac{k_i k_j}{k^2} \right) \left(-\hat{\frac{\partial}{\partial r_j} u_i u_j} + \frac{1}{\rho} (\hat{F}_{i}^{\mathrm{fiber}} + \hat{F}_{i}^{\mathrm{turb}}) \right)  
-$$
+For the orthogonal periodic cell,
 
-The equation above is integrated numerically in time using a second order Runge-Kutta (RK-2) method. In our pseudo-spectral code, the nonlinear dyadic products $u_i u_j$ are first formed in physical space, and then transformed to the Fourier space. Aliasing errors associated nonlinear terms are removed by a combination of phase shifting (for aliasing in one dimension) and truncation at the wavenumber magnitude $k_{\mathrm{max},\alpha} = (2\pi/H_{\alpha}) \sqrt{2} N_{\alpha}/3$ (which eliminates the doubly and triply aliased Fourier modes). Use of the dyadic form as in $\frac{\partial}{\partial r_j} (u_i u_j)$ versus the advective form $u_j \frac{\partial}{\partial r_j} u_i$ has the advantage of reducing the number of variables that need to be Fourier-transformed, as well as the level of residual aliasing errors that may arise. The force $F_{i}^{\mathrm{fiber}}$ exerted by the fibers on the fluid is obtained as a convolution integral of Dirac delta function with a linear force per unit length $f_i(s)$ along all the fiber axes. 
+$$k_x=\frac{2\pi n_x}{H_x},\qquad k_y=\frac{2\pi n_y}{H_y},\qquad k_z=\frac{2\pi n_z}{H_z},$$
 
-$$
-F_{i}^{\mathrm{fiber}} = \sum_{m = 1}^{N_{\mathrm{fiber}}} \int_{-1}^{1} l \mathrm{d}s f_i^m(s) \delta (r_i - r_{c,i}^m - sp_i l) 
-$$ 
+where $n_\alpha$ spans the retained discrete Fourier modes in direction $\alpha\in\{x,y,z\}$.
 
-where, $s \in [-l,l]$ is the coordinate along the fiber axis, and $l$ is the fiber half-length. The position of the center of mass of the $m$-th fiber is denoted by $r_{c,i}^m$ and its fiber orientation (unit vector along the fiber axis) is denoted by $p_i^m$. The Fourier transform of the fiber forcing is then calculated as, 
+Applying the incompressibility projection gives the Fourier-space evolution equation
 
-$$
-\hat{F}_{i}^{\mathrm{fiber}} (k_x, k_y, k_z) = \sum_{m = 1}^{N_{\mathrm{fiber}}} \int_{-1}^{1} l \mathrm{d}s f_i^m(s) \delta (r_i - r_{c,i}^m - sp_i^m l) \mathrm{exp} (-i k_j (r_{c,j}^m + sp_j^m l)) 
-$$
+$$\frac{\partial\widehat{\mathbf{u}}}{\partial t}+\nu k^2\widehat{\mathbf{u}}=\left(\mathbf{I}-\frac{\mathbf{k}\mathbf{k}}{k^2}\right)\cdot\left[-\widehat{\nabla\cdot(\mathbf{u}\mathbf{u})}+\frac{1}{\rho_f}\left(\widehat{\mathbf{F}}^{\mathrm{fiber}}+\widehat{\mathbf{F}}^{\mathrm{turb}}\right)\right].$$
 
-The force per unit length along the fiber axis is obtained by solving an integral equation obtained from an inertial slender-body theory (Joshi et. al., submitted to Journal of Fluid Mechanics, arXiv: 2607.02993 [physics.flu-dyn]), 
+The projection operator removes the pressure and enforces
 
-$$
-4\pi (\eta_{\perp}(s)(\delta_{ij}-p_i^m p_j^m)+\eta_{\parallel}(s) p_i^m p_j^m) (U_j^m+s\dot{p}_j^m l-u_j^{NS}) = f_i^m(s) \left(\mathrm{ln}(2\kappa) + \mathrm{ln}\left(\frac{(1-s^2)^{1/2}}{\tilde{a}(s)}\right)\right) + \frac{1}{2}\int_{-1}^{1}\frac{f_i^m(s')-f_i^m(s)}{|s-s'|} \mathrm{d}s' + \frac{1}{2}(\delta_{ik}- 2p_i^m p_k^m)f_k^m(s) 
-$$ 
+$$\mathbf{k}\cdot\widehat{\mathbf{u}}=0.$$
 
-Here, $u_i^{NS}$ denotes the "non-singular" part of the velocity disturbance at the fiber axis, $U_i^m$ and $\dot{p}_i^m$ are the fiber velocity and rotation rate respectively, and $\kappa$ is the fiber aspect ratio. The non-singular part of the velocity disturbance at the fiber axis is obtained by subtracting the Stokes flow disturbance due to the fiber forcing from the total flow in the Fourier space, and supplementing the Stokes flow disturbance only due to image fibers (in other unit cells) to the difference. The Stokes flow disturbance due to image fibers $u_i^{SI}$ is obtained from the analysis of Hasimoto, using an Ewald summation.
+## 4. Fiber force on the fluid
 
-$$ 
-u_i^{NS} = \mathrm{IFT} \left[\hat{u}_i - \frac{1}{\mu k^2} (\delta_{ij} - \frac{k_i k_j}{k^2} ) \hat{F}_{j}^{\mathrm{fiber}} \right] + u_i^{SI}
-$$ 
+The fibers are represented in the fluid equations by line distributions of force:
 
-As discussed above, to sustain turbulence at steady state, the code uses a stochastic forcing scheme proposed by Eswaran and Pope. The forcing term $\hat{F}_{i}^{\mathrm{turb}}$ is non-zero only in the wavenumber band $k \in (0, k_F]$, and is computed using six independent Uhlenbeck-Ornstein (UO) processes at each of the forced wavenumbers. The UO processes denoted by $\hat{b}_i (k_i,t)$ can be written as, 
+$$\mathbf{F}^{\mathrm{fiber}}(\mathbf{r},t)=\sum_{m=1}^{N_{\mathrm{fiber}}}\int_{-1}^{1}l\mathbf{f}^m(s,t)\delta\!\left[\mathbf{r}-\mathbf{r}_c^m(t)-sl\mathbf{p}^m(t)\right]ds.$$
 
-$$
-\hat{b}_i (k_i,t+\Delta t) = \hat{b}_i (k_i,t) \left(1-\frac{\Delta t}{T_F} \right) + \theta_i \left(\frac{2\sigma^2 \Delta t}{T_F} \right)
-$$ 
+Here, $s\in[-1,1]$ is the dimensionless coordinate along the fiber axis and $\mathbf{f}^m(s,t)$ is the force per unit length exerted by fiber $m$ on the fluid.
 
-where, $\Delta t$ is the time step, $\theta_i$ is a vector of complex random numbers whose components are drawn from a standard normal distribution, and $\sigma^2$ and $T_F$ are the variance and time scale respectively, of the UO process. Finally, the turbulent forcing $\hat{F}_{\mathrm{turb},i}$ is the projection of $\hat{b}_i(k_i,t)$ onto the plane normal to the wavevector $k_i$, 
+Its Fourier transform is
 
-$$
-\hat{F}_{i}^{\mathrm{turb}} (k_i, t) = \left( \delta_{ij} - \frac{k_i k_j}{k^2} \right) \hat{b}_j (k_i, t) 
-$$  
+$$\widehat{\mathbf{F}}^{\mathrm{fiber}}(\mathbf{k},t)=\sum_{m=1}^{N_{\mathrm{fiber}}}\int_{-1}^{1}l\mathbf{f}^m(s,t)e^{-i\mathbf{k}\cdot[\mathbf{r}_c^m(t)+sl\mathbf{p}^m(t)]}ds.$$
 
+Representing the fibers by line forces avoids resolving their small cross-sectional scale on the three-dimensional DNS grid.
 
+## 5. Inertial slender-body equation
 
+The force per unit length along each fiber is obtained from an inertial SBT integral equation:
 
+$$4\pi\left[\eta_\perp(s)(\mathbf{I}-\mathbf{p}^m\mathbf{p}^m)+\eta_\parallel(s)\mathbf{p}^m\mathbf{p}^m\right]\cdot\left[\mathbf{U}^m+sl\dot{\mathbf{p}}^m-\mathbf{u}^{NS,m}(s)\right]=\mathbf{f}^m(s)\left[\ln(2\kappa)+\ln\left(\frac{\sqrt{1-s^2}}{\widetilde{a}(s)}\right)\right]+\frac{1}{2}\int_{-1}^{1}\frac{\mathbf{f}^m(s')-\mathbf{f}^m(s)}{|s-s'|}\,ds'+\frac{1}{2}(\mathbf{I}-2\mathbf{p}^m\mathbf{p}^m)\cdot\mathbf{f}^m(s).$$
 
+Here:
 
+- $\eta_\perp(s)$ and $\eta_\parallel(s)$ are inertia-dependent inner-outer matching coefficients;
+- $\widetilde{a}(s)$ is the dimensionless local fiber-radius profile;
+- $\dot{\mathbf{p}}^m$ is the orientation rate; and
+- $\mathbf{u}^{NS,m}(s)$ is the non-singular fluid velocity evaluated along fiber $m$.
 
+The local fiber velocity relative to the fluid combines centroid translation and orientation-changing rotation:
 
+$$\mathbf{u}_{\mathrm{fiber}}^m(s)=\mathbf{U}^m+sl\dot{\mathbf{p}}^m.$$
 
+## 6. Non-singular velocity disturbance
 
+The total velocity contains the logarithmically singular Stokes disturbance generated by the local line force. This singular part is removed in Fourier space before the fluid velocity is supplied to the SBT equation.
 
+The non-singular velocity used for fiber $m$ is represented schematically as
 
+$$\mathbf{u}^{NS,m}=\mathrm{IFT}\left[\widehat{\mathbf{u}}-\frac{1}{\mu k^2}\left(\mathbf{I}-\frac{\mathbf{k}\mathbf{k}}{k^2}\right)\cdot\widehat{\mathbf{F}}^{\mathrm{fiber}}\right]+\mathbf{u}^{SI,m}.$$
 
+The first term removes the Stokes disturbance generated by the explicitly represented fibers. The correction $\mathbf{u}^{SI,m}$ restores the Stokes contribution from periodic image fibers. It is evaluated using a Hasimoto-type periodic Green's function and Ewald summation.
 
+This procedure retains the non-singular local and periodic disturbance required by the inertial SBT equation without attempting to resolve the logarithmic line-force singularity on the DNS grid.
 
+## 7. Fiber motion
 
+The hydrodynamic force and torque on fiber $m$ are
 
+$$\mathbf{F}_{\mathrm{hyd}}^m=-\int_{-1}^{1}l\,\mathbf{f}^m(s)\,ds,$$
 
+$$\mathbf{T}_{\mathrm{hyd}}^m=-\int_{-1}^{1}\left[sl\mathbf{p}^m\times\mathbf{f}^m(s)\right]l\,ds.$$
 
+When finite fiber inertia is retained, the translational and rotational equations are
 
+$$\rho_pV_p\frac{d\mathbf{U}^m}{dt}=\mathbf{F}_{\mathrm{hyd}}^m+\mathbf{F}_{\mathrm{ext}}^m+(\rho_p-\rho_f)V_p\mathbf{g},$$
 
+$$\mathbf{I}_p^m\cdot\frac{d\mathbf{\Omega}^m}{dt}=\mathbf{T}_{\mathrm{hyd}}^m+\mathbf{T}_{\mathrm{ext}}^m.$$
 
+When fiber inertia is neglected, the corresponding instantaneous force and torque balances are imposed:
 
+$$\mathbf{F}_{\mathrm{hyd}}^m+\mathbf{F}_{\mathrm{ext}}^m+(\rho_p-\rho_f)V_p\mathbf{g}=\mathbf{0},$$
 
+$$\mathbf{T}_{\mathrm{hyd}}^m+\mathbf{T}_{\mathrm{ext}}^m=\mathbf{0}.$$
 
+The orientation evolves according to
+
+$$\frac{d\mathbf{p}^m}{dt}=\mathbf{\Omega}^m\times\mathbf{p}^m.$$
+
+## 8. Turbulence forcing
+
+Statistically stationary homogeneous isotropic turbulence is maintained by stochastic forcing applied only to low-wavenumber modes satisfying
+
+$$0 \leq k \leq k_F.$$
+
+The forcing is generated from independent Ornstein-Uhlenbeck processes in Fourier space and projected onto the plane perpendicular to $\mathbf{k}$:
+
+$$\widehat{\mathbf{F}}^{\mathrm{turb}}(\mathbf{k},t)=\left(\mathbf{I}-\frac{\mathbf{k}\mathbf{k}}{k^2}\right)\cdot\widehat{\mathbf{b}}(\mathbf{k},t).$$
+
+The parameters $\sigma$ and $T_F$ control the forcing amplitude and correlation timescale, respectively.
+
+The projection ensures that the turbulent forcing is divergence-free:
+
+$$\mathbf{k}\cdot\widehat{\mathbf{F}}^{\mathrm{turb}}=0.$$
+
+## 9. Two-way coupling
+
+The model is two-way coupled:
+
+- the turbulent velocity and velocity gradients drive fiber translation and rotation;
+- the fiber force distribution enters the Navier-Stokes equations as $\mathbf{F}^{\mathrm{fiber}}$; and
+- the resulting modified fluid disturbance feeds back into the inertial SBT equation.
+
+The coupled problem is therefore solved iteratively within a fluid time step.
+
+## 10. Scope and assumptions
+
+The framework assumes:
+
+- incompressible Newtonian flow;
+- a triply periodic orthogonal domain;
+- slender fibers with $\kappa\gg1$;
+- a line-force representation of each fiber;
+- no direct resolution needed for the fiber cross-section;
+- no fiber-fiber contact or lubrication model in the present documented formulation; and
+- periodic-image corrections evaluated through Ewald summation.
+
+The associated publications should be consulted for the derivation, asymptotic restrictions, and validation of the inertial SBT model.
