@@ -193,7 +193,7 @@ $$px^2+py^2+pz^2=1.$$
 
 The angular velocity is
 
-$$\mathbf{\Omega}=\begin{bmatrix}OmegaX\\OmegaY\\OmegaZ\end{bmatrix}.$$
+$$\mathbf{\Omega}=\begin{bmatrix} OmegaX \\ OmegaY \\ OmegaZ \end{bmatrix}.$$
 
 ## 13. Fiber translational velocity
 
@@ -236,7 +236,7 @@ The main combinations are:
 
 The imposed uniform velocity is
 
-$$\mathbf{U}_{\infty}=\begin{bmatrix}U\_far\_Imposed\\V\_far\_Imposed\\W\_far\_Imposed\end{bmatrix}.$$
+$$\mathbf{U}_{\infty}=\begin{bmatrix} U_{far}_{Imposed} \\ V_{far}_{Imposed} \\ W_{far}_{Imposed} \end{bmatrix}.$$
 
 ## 16. Gravity
 
