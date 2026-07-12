@@ -236,7 +236,7 @@ The main combinations are:
 
 The imposed uniform velocity is
 
-$$\mathbf{U}_{\infty}=\begin{bmatrix} U_{far}_{Imposed} \\ V_{far}_{Imposed} \\ W_{far}_{Imposed} \end{bmatrix}.$$
+$$\mathbf{U}_{\infty}=\begin{bmatrix} U_{{far}_{Imposed}} \\ V_{{far}_{Imposed}} \\ W_{{far}_{Imposed}} \end{bmatrix}.$$
 
 ## 16. Gravity
 
