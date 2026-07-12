@@ -249,7 +249,7 @@ $$\mathbf{U}_{\infty}=\begin{bmatrix} U_{{far}_{Imposed}} \\ V_{{far}_{Imposed}}
 
 The gravity vector is
 
-$$\mathbf{g}=gravity\_Imposed\begin{bmatrix}gx\\gy\\gz\end{bmatrix}.$$
+$$\mathbf{g}=gravity\_Imposed\begin{bmatrix}gx \\ gy \\ gz \end{bmatrix}.$$
 
 When gravity is active, the direction should satisfy
 
@@ -265,7 +265,7 @@ $$gx^2+gy^2+gz^2=1.$$
 
 The external force is
 
-$$\mathbf{F}_{\mathrm{ext}}=\begin{bmatrix}F\_ext\_X\\F\_ext\_Y\\F\_ext\_Z\end{bmatrix}.$$
+$$\mathbf{F}_{\mathrm{ext}}=\begin{bmatrix} F_{ext_{X}} \\ F_{ext_{Y}} \\ F_{ext_{Z}} \end{bmatrix}.$$
 
 ## 18. External torque
 
@@ -277,7 +277,7 @@ $$\mathbf{F}_{\mathrm{ext}}=\begin{bmatrix}F\_ext\_X\\F\_ext\_Y\\F\_ext\_Z\end{b
 
 The external torque is
 
-$$\mathbf{T}_{\mathrm{ext}}=\begin{bmatrix}T\_ext\_X\\T\_ext\_Y\\T\_ext\_Z\end{bmatrix}.$$
+$$\mathbf{T}_{\mathrm{ext}}=\begin{bmatrix} T_{ext_{X}} \\ T_{ext_{Y}} \\ T_{ext_{Z}} \end{bmatrix}.$$
 
 ## 19. Interpolation order
 
