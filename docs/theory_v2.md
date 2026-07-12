@@ -162,8 +162,7 @@ The framework assumes:
 - a triply periodic orthogonal domain;
 - slender fibers with $\kappa\gg1$;
 - a line-force representation of each fiber;
-- finite-inertia corrections represented through inertial SBT;
-- no direct resolution of the fiber cross-section;
+- no direct resolution needed for the fiber cross-section;
 - no fiber-fiber contact or lubrication model in the present documented formulation; and
 - periodic-image corrections evaluated through Ewald summation.
 
