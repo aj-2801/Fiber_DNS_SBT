@@ -301,7 +301,7 @@ Increase the orders until the velocity interpolated along the fiber axis and res
 
 The forced modes satisfy
 
-$$0<k\leq k_F.$$
+$$ 0 \leq k \leq k_F.$$
 
 The sample input gives the grid-compatibility condition
 
@@ -421,7 +421,7 @@ Before launching a simulation, verify that:
 3. The launch process count equals $2^{dproc}$.
 4. The domain dimensions and resolution give an acceptable $k_{\max}\eta$.
 5. `interval_calc` is even.
-6. `t_fiber_start < t_fiber_end \leq EndTime`.
+6. `t_fiber_start < t_fiber_end < EndTime`.
 7. The deterministic initial orientation is normalized when `random_init_p = 0`.
 8. The gravity direction is normalized when gravity is active.
 9. The interpolation orders are even.
