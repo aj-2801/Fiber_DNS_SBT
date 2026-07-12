@@ -1,6 +1,6 @@
 # Theory: inertial slender fibers in homogeneous isotropic turbulence
 
-This document summarizes the mathematical formulation used by `FiberDNS-SBT`. It is intended as an implementation-oriented companion to the associated research papers.
+This document summarizes the mathematical formulation used by `Fiber_DNS_SBT`. It is intended as an implementation-oriented companion to the associated research papers.
 
 ## 1. Physical problem
 
