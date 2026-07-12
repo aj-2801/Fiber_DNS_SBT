@@ -1,6 +1,6 @@
 # Numerical methods
 
-This document summarizes the computational methods used by `FiberDNS-SBT`.
+This document summarizes the computational methods used by `Fiber_DNS_SBT`.
 
 ## 1. Spatial resolution
 
